@@ -26,17 +26,6 @@ simulateIFS :: IFS -> (Double,Double) -> [Probability] -> [(Double,Double)]
 simulateIFS _ _ [] = []
 simulateIFS ifs xn (p:ps) = let xn' = applyTransition (chooseTransition p ifs) xn in
                             xn' : simulateIFS ifs xn' ps
-          
-cross = buildIFS $
-    [ (0.1, Affine (1/2) 0 0 (1/2) (-0.5) (-0.5))
-    , (0.1, Affine (1/2) 0 0 (1/2) (0.5) (0.5))
-    , (0.1, Affine (1/2) 0 0 (1/2) (-0.5) (0.5))
-    , (0.1, Affine (1/2) 0 0 (1/2) (0.5) (-0.5))
-    , (0.6/4, Affine (1/2) 0 0 (1/2) (-1) (-1))
-    , (0.6/4, Affine (1/2) 0 0 (1/2) (-1) (1))
-    , (0.6/4, Affine (1/2) 0 0 (1/2) 1 (-1))
-    , (0.6/4, Affine (1/2) 0 0 (1/2) 1 1)
-    ]
                             
 koch = buildIFS $
     [ (0.25, Affine (1/3) 0 0 (1/3) 0 0)
@@ -45,36 +34,6 @@ koch = buildIFS $
     , (0.25, Affine (1/6) ((sqrt 3) / 6) (-(sqrt 3) / 6) (1/6) (0.5) (sqrt 3 / 6))
     ]                        
     
-barnsleyFern = buildIFS $
-    [ (0.01, Affine 0 0 0 0.16 0 0)
-    , (0.85, Affine 0.85 0.04 (-0.04) 0.85 0 1.6)
-    , (0.07, Affine 0.2 (-0.26) 0.23 0.22 0 1.6)
-    , (0.07, Affine (-0.15) 0.28 0.26 0.24 0 0.44)
-    ]
-          
-dragon = buildIFS $
-    [ (0.5, Affine a1 b1 c1 d1 0 0)
-    , (0.5, Affine a2 b2 c2 d2 1 0)
-    ]
-  where a1 = (1 / sqrt 2) * cos (pi / 4)
-        b1 = (1 / sqrt 2) * (negate (sin (pi / 4)))
-        c1 = -1 * b1
-        d1 = a1
-        a2 = (1 / sqrt 2) * cos (0.75 * pi)
-        b2 = (1 / sqrt 2) * (negate (sin (pi * 0.75)))
-        c2 = -1 * b2
-        d2 = a2
-
-thingy = buildIFS $
-    [ (0.5, Affine 0.2020 (-0.8050) (-0.6890) (-0.3420) (-0.3730) (-0.6530))
-    , (0.5, Affine 0.1380 0.6650 (-0.5020) (-0.2220) 0.6600 (-0.2770))
-    ]
-        
-sierpinksi = buildIFS $
-    [ (1/3, Affine 0.5 0 0 0.5 0 0)
-    , (1/3, Affine 0.5 0 0 0.5 0.25 ((sqrt 3) / 4))
-    , (1/3, Affine 0.5 0 0 0.5 0.5 0)
-    ]
 chooseTransition :: Probability -> IFS -> Transition
 chooseTransition p (IFS x) = chooseTransition' p x
 

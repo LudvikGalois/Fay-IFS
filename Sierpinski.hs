@@ -48,7 +48,7 @@ randDouble = ffi "Math.random()"
 main = do
     x <- newRef 0
     y <- newRef 0
-    setFillStyle "#00FF00" 
+    setFillStyle "#FF00FF" 
     setInterval 400 (drawStuff 1000 x y )
 
 drawStuff :: Int -> Ref Double -> Ref Double -> Fay ()
@@ -65,7 +65,7 @@ drawStuff n x y = do
     
 
 drawDot :: Double -> Double -> Fay ()
-drawDot = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillRect((%1)*600, 600 - %2*600, 1, 1)"
+drawDot = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillRect((%1)*600+100, 540 - %2*600, 1, 1)"
     
 setFillStyle :: String -> Fay ()
 setFillStyle = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillStyle=%1"
