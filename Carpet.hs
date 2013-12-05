@@ -27,11 +27,15 @@ simulateIFS _ _ [] = []
 simulateIFS ifs xn (p:ps) = let xn' = applyTransition (chooseTransition p ifs) xn in
                             xn' : simulateIFS ifs xn' ps
           
-       
-sierpinksi = buildIFS $
-    [ (1/3, Affine 0.5 0 0 0.5 0 0)
-    , (1/3, Affine 0.5 0 0 0.5 0.25 ((sqrt 3) / 4))
-    , (1/3, Affine 0.5 0 0 0.5 0.5 0)
+carpet = buildIFS $
+    [ (1/8, Affine (1/3) 0 0 (1/3) 0 0)
+    , (1/8, Affine (1/3) 0 0 (1/3) 0 (1/3))
+    , (1/8, Affine (1/3) 0 0 (1/3) 0 (2/3))
+    , (1/8, Affine (1/3) 0 0 (1/3) (1/3) 0)
+    , (1/8, Affine (1/3) 0 0 (1/3) (1/3) (2/3))
+    , (1/8, Affine (1/3) 0 0 (1/3) (2/3) (1/3))
+    , (1/8, Affine (1/3) 0 0 (1/3) (2/3) 0)
+    , (1/8, Affine (1/3) 0 0 (1/3) (2/3) (2/3))
     ]
 
 chooseTransition :: Probability -> IFS -> Transition
@@ -49,8 +53,8 @@ randDouble = ffi "Math.random()"
 main = do
     x <- newRef 0
     y <- newRef 0
-    setFillStyle "#FF00FF" 
-    setInterval 400 (drawStuff 1000 x y )
+    setFillStyle "#FF0000" 
+    setInterval 400 (drawStuff 2000 x y )
 
 drawStuff :: Int -> Ref Double -> Ref Double -> Fay ()
 drawStuff 0 x y = return ()
@@ -58,7 +62,7 @@ drawStuff n x y = do
     p <- randDouble
     xval <- readRef x
     yval <- readRef y
-    let (x', y') = applyTransition (chooseTransition p sierpinksi) (xval, yval)
+    let (x', y') = applyTransition (chooseTransition p carpet) (xval, yval)
     drawDot x' y' 
     writeRef x x'
     writeRef y y'
@@ -66,7 +70,7 @@ drawStuff n x y = do
     
 
 drawDot :: Double -> Double -> Fay ()
-drawDot = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillRect((%1)*600+100, 540 - %2*600, 1, 1)"
+drawDot = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillRect((%1)*500+150, 540 - %2*500, 1, 1)"
     
 setFillStyle :: String -> Fay ()
 setFillStyle = ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillStyle=%1"
