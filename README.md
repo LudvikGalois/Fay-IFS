@@ -1,4 +1,4 @@
 Fay-IFS
 =======
 
-Drawing fractals in with Fay
+Drawing fractals with Fay
