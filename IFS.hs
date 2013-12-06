@@ -54,6 +54,7 @@ main = do
         setHeadHtml "<style> canvas{float:left; margin:10px;} </style>"
         setBodyHtml "<h1> IFS drawing program </h1>"
         addBodyHtml "<h3> with at most 10 functions (which must be affine transforms), because adding rows to tables is effort</h3>"
+        addBodyHtml "<p> Functions are of the form f(x,y) = (a*x+b*y+e, c*x+d*y+f) and chosen with probability p </p>"
         addBodyHtml "<canvas id =\"fractal\" width=\"800\" height=\"600\" style=\"border:1px solid #000000;\">"
         addBodyHtml $ concat
             [ "<table border=\"1\">" 
