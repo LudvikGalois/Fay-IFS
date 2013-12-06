@@ -81,7 +81,6 @@ redraw x y ifs time dots timer win = do
     ymax <- getFloatBox "ymax"
     funs <- sequence $ map readF [1..10]
     writeRef win (Window xmin xmax ymin ymax)
-    alert (show (buildIFS funs))
     writeRef ifs (buildIFS funs)
     drawLoop x y ifs time dots timer win
 
