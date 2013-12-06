@@ -49,30 +49,66 @@ main = do
     ifs <- newRef $ buildIFS [(1, Affine 0 0 0 0 0 0)]
     time <- newRef 100
     dots <- newRef 100
-    timer <- newRef undefined
+    timer <- (setInterval 100000 (return ())) >>= newRef
     addWindowEvent "load" $ do
-        setBodyHtml "<canvas id =\"fractal\" width=\"800\" height=\"600\" style=\"border:1px solid #000000;\">"
-        addBodyHtml "<p>"
-        addBodyHtml "Speed: <input type=\"number\" id=\"speed\" value=\"100\" size=\"4\">"
-        addBodyHtml "Dots per update: <input type=\"number\" id=\"dotcount\" value=\"100\" size=\"4\">"
-        addBodyHtml "Min X: <input type=\"number\" id=\"xmin\" value=\"0\" size=\"4\">"
-        addBodyHtml "Max X: <input type=\"number\" id=\"xmax\" value=\"1\" size=\"4\">"
-        addBodyHtml "Min Y: <input type=\"number\" id=\"ymin\" value=\"0\" size=\"4\">"
-        addBodyHtml "Max Y: <input type=\"number\" id=\"ymax\" value=\"1\" size=\"4\">"
-        addBodyHtml "</p>"
-        mapM_ addFunction [1..10]
+        setHeadHtml "<style> canvas{float:left; margin:10px;} </style>"
+        setBodyHtml "<h1> IFS drawing program </h1>"
+        addBodyHtml "<h3> with at most 10 functions (which must be affine transforms), because adding rows to tables is effort</h3>"
+        addBodyHtml "<canvas id =\"fractal\" width=\"800\" height=\"600\" style=\"border:1px solid #000000;\">"
+        addBodyHtml $ concat
+            [ "<table border=\"1\">" 
+            , tr $ concatMap (\s -> "<th>" ++ s ++ "</th>") ["Setting", "Value"]
+            , tr $ concat [td "Time (in ms) between updates"
+                          ,td "<input type=\"number\" id=\"speed\" value=\"0\" size=\"7\">"]
+            , tr $ concat [td "Dots per update", td "<input type=\"number\" id=\"dotcount\" value=\"0\" size=\"7\">"]
+            , tr $ concat [td "Minimum expected X", td "<input type=\"number\" id=\"xmin\" value=\"0\" size=\"7\">"]
+            , tr $ concat [td "Maximum expected X", td "<input type=\"number\" id=\"xmax\" value=\"1\" size=\"7\">"]
+            , tr $ concat [td "Minimum expected Y", td "<input type=\"number\" id=\"ymin\" value=\"0\" size=\"7\">"]
+            , tr $ concat [td "Maximum expected Y", td " <input type=\"number\" id=\"ymax\" value=\"1\" size=\"7\">"]
+            , tr $ concat [td "Background Colour", td " <input type=\"text\" id=\"bg\" value=\"#000000\" size=\"7\">"]
+            , tr $ concat [td "Foreground Colour", td " <input type=\"text\" id=\"fg\" value=\"#FFFFFF\" size=\"7\">"]
+            , "</table>"
+            ]
+        addBodyHtml $ concat 
+            [ "<table border=\"1\">" 
+            , "<tr>"
+            , concatMap (\c -> "<th>" ++ [c] ++ " </th>") " abcdefp"
+            , "</tr>"
+            , concatMap addFunction [1..10] 
+            ,"</table>"
+            ]
         addBodyHtml "<button id=\"redraw\"> Redraw </button>"
-        setFillStyle "#000000" 
+        startupSierpinski
         setupButton (redraw x y ifs time dots timer win)
-        drawLoop x y ifs time dots timer win
+        redraw x y ifs time dots timer win
+
+startupSierpinski = do
+    setBox "speed" "500"
+    setBox "dotcount" "1000"
+    setBox "xmin" "-0.2"
+    setBox "xmax" "1.2"
+    setBox "ymin" "-0.2"
+    setBox "ymax" "1"
+    setBox "p1" "0.333"
+    setBox "a1" "0.5"
+    setBox "d1" "0.5"
+    setBox "p2" "0.333"
+    setBox "a2" "0.5"
+    setBox "d2" "0.5"
+    setBox "e2" "0.25"
+    setBox "f2" "0.433"
+    setBox "p3" "0.333"
+    setBox "a3" "0.5"
+    setBox "d3" "0.5"
+    setBox "e3" "0.5"
 
 redraw x y ifs time dots timer win = do
     writeRef x 0
     writeRef y 0
     readRef timer >>= clearInterval 
-    setFillStyle "#FFFFFF" 
+    getBox "bg" >>= setFillStyle
     ffi "document.getElementById(\"fractal\").getContext(\"2d\").fillRect(1, 1, 800, 600)" :: Fay ()
-    setFillStyle "#000000" 
+    getBox "fg" >>= setFillStyle
     getIntBox "speed" >>= writeRef time
     getIntBox "dotcount" >>= writeRef dots
     xmin <- getFloatBox "xmin"
@@ -95,20 +131,26 @@ readF n = do
     f <- getFloatBox ('f':show n)
     return (p, (Affine a b c d e f))
 
-addFunction :: Int -> Fay ()
-addFunction n = do
-    addBodyHtml "<p>"
-    addBodyHtml (inputBox 'p' n)
-    addBodyHtml (inputBox 'a' n)
-    addBodyHtml (inputBox 'b' n)
-    addBodyHtml (inputBox 'c' n)
-    addBodyHtml (inputBox 'd' n)
-    addBodyHtml (inputBox 'e' n)
-    addBodyHtml (inputBox 'f' n)
-    addBodyHtml "</p>"
+addFunction :: Int -> String
+addFunction n = tr $ concat $
+    [ td $ "<i> f" ++ show n ++ " </i>"
+    , (inputBox 'a' n)
+    , (inputBox 'b' n)
+    , (inputBox 'c' n)
+    , (inputBox 'd' n)
+    , (inputBox 'e' n)
+    , (inputBox 'f' n)
+    , (inputBox 'p' n)
+    ]
         
+tr x = "<tr>" ++ x ++ "</tr>"
+td x = "<td>" ++ x ++ "</td>"
+
+setBox :: String -> String -> Fay ()
+setBox = ffi "document.getElementById(%1).value=%2"
+
 inputBox :: Char -> Int -> String
-inputBox c n = val ++ ": <input type=\"number\" id=\"" ++ val ++ "\" value = \"0\" size=\"4\">"
+inputBox c n = td $ "<input type=\"number\" id=\"" ++ val ++ "\" value = \"0\" size=\"4\">"
     where val = c:(show n)
 
 getFloatBox :: String -> Fay Double
@@ -116,6 +158,9 @@ getFloatBox = ffi "parseFloat(document.getElementById(%1).value)"
 
 getIntBox :: String -> Fay Int
 getIntBox = ffi "parseInt(document.getElementById(%1).value)"
+
+getBox :: String -> Fay String
+getBox = ffi "document.getElementById(%1).value"
 
 drawLoop :: Ref Double -> Ref Double -> Ref IFS -> Ref Int -> Ref Int -> Ref Timer -> Ref Window -> Fay ()
 drawLoop x y ifs time dots timer win = do
@@ -140,6 +185,9 @@ drawStuff n x y ifs win@(Window xmin xmax ymin ymax) = do
 
 warp point minpoint maxpoint scaling = (point - minpoint) * (scaling / (maxpoint - minpoint))
     
+setHeadHtml :: String -> Fay ()
+setHeadHtml = ffi "document.head.innerHTML = %1"
+
 setBodyHtml :: String -> Fay ()
 setBodyHtml = ffi "document.body.innerHTML = %1"
 
